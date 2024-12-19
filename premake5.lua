@@ -21,9 +21,9 @@ project "glfw"
         "src/window.c"
     }
 
-    includedirs 
-    { 
-        "%{IncludeDir.glfw}" 
+    includedirs
+    {
+        "%{IncludeDir.glfw}"
     }
 
     filter "system:windows"
