@@ -1,66 +1,102 @@
-project "glfw"
-    kind "StaticLib"
+project "GLFW"
+    kind "SharedLib"
     language "C"
 
-    targetdir ("" .. ThirdPartyOutputDir .. "/bin/")
-    objdir    ("" .. ThirdPartyOutputDir .. "/obj/")
+    if OutputIntermediateDir == nil or OutputTargetDir == nil then
+        targetdir ("Build/bin/%{prj.name}/")
+        objdir    ("Build/obj/%{prj.name}/")
+
+    else
+        targetdir ("../../../" .. OutputTargetDir .. "")
+        objdir    ("../../../" .. OutputIntermediateDir .. "")
+    end
 
     files
     {
-        "%{IncludeDir.glfw}/GLFW/*.h",
-        "src/context.c",
-        "src/egl_context.*",
-        "src/init.c",
-        "src/input.c",
-        "src/internal.h",
-        "src/monitor.c",
-        "src/null*.*",
-        "src/osmesa_context.*",
-        "src/platform.c",
-        "src/vulkan.c",
-        "src/window.c"
+        "src/*.c",
+        "include/GLFW/*.h"
     }
 
     includedirs
     {
-        "%{IncludeDir.glfw}"
+        "include"
     }
 
+    defines
+    {
+        "_GLFW_BUILD_DLL" -- Required to export GLFW symbols when building a shared library
+    }
+
+    filter "configurations:Debug"
+        runtime "Debug"
+        symbols "on"
+
+    filter "configurations:Release"
+        runtime "Release"
+        optimize "on"
+
+    filter "configurations:Dist"
+        runtime "Release"
+        optimize "on"
+        symbols "off"
+
     filter "system:windows"
-        defines "_GLFW_WIN32"
+        systemversion "latest"
+        defines
+        {
+            "_GLFW_WIN32", -- Platform-specific define
+            "_CRT_SECURE_NO_WARNINGS"
+        }
+
         files
         {
-            "src/win32_*.*",
-            "src/wgl_context.*"
+            "src/win32_*.c",
+            "src/wgl_context.c",
+            "src/egl_context.c",
+            "src/osmesa_context.c"
         }
 
     filter "system:linux"
-        defines "_GLFW_X11"
+        defines
+        {
+            "_GLFW_X11"
+        }
+
         files
         {
-            "src/glx_context.*",
-            "src/linux*.*",
-            "src/posix*.*",
-            "src/x11*.*",
-            "src/xkb*.*"
+            "src/x11_*.c",
+            "src/xkb_unicode.c",
+            "src/posix_*.c",
+            "src/glx_context.c",
+            "src/egl_context.c",
+            "src/osmesa_context.c"
+        }
+
+        links
+        {
+            "dl",       -- Dynamic linking library
+            "pthread",  -- POSIX threads
+            "X11"       -- X11 for windowing
         }
 
     filter "system:macosx"
-        defines "_GLFW_COCOA"
-        files
+        defines
         {
-            "src/cocoa_*.*",
-            "src/posix_thread.h",
-            "src/nsgl_context.h",
-            "src/egl_context.h",
-            "src/osmesa_context.h",
-
-            "src/posix_thread.c",
-            "src/nsgl_context.m",
-            "src/egl_context.c",
-            "src/nsgl_context.m",
-            "src/osmesa_context.c"                      
+            "_GLFW_COCOA"
         }
 
-    filter "action:vs*"
-        defines "_CRT_SECURE_NO_WARNINGS"
+        files
+        {
+            "src/cocoa_*.m",
+            "src/posix_thread.c",
+            "src/nsgl_context.c",
+            "src/egl_context.c",
+            "src/osmesa_context.c"
+        }
+
+        links
+        {
+            "Cocoa.framework",
+            "IOKit.framework",
+            "CoreFoundation.framework"
+        }
