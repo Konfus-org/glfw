@@ -6,8 +6,7 @@ project "GLFW"
     {
         "src/*.c",
         "include/GLFW/*.h",
-        "./**.md",
-        "./**.lua"
+        "./**.md"
     }
     includedirs
     {
